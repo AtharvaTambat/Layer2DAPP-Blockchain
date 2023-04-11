@@ -1,3 +1,4 @@
+import argparse
 import json
 import random
 
@@ -6,13 +7,28 @@ import networkx as nx
 import numpy as np
 from web3 import Web3
 
+########################################################################################################################################################
+
+# Parse the arguments
+parser = argparse.ArgumentParser()
+parser.add_argument('-n','--num_nodes', type=int, default=100, help='Number of nodes in the network')
+parser.add_argument('-t','--num_transactions', type=int, default=1000, help='Number of transactions to be sent')
+parser.add_argument('-v','--mean_value', type=int, default=10, help='Mean value of the combined balance of the two accounts')
+parser.add_argument('-m','--m', type=int, default=1, help='Number of edges to attach from a new node to existing nodes')
+parser.add_argument('-a','--amount', type=int, default=1, help='Amount to be sent in each transaction')
+parser.add_argument('-s','--show', action = 'store_true' , help='Show the graph')
+
+args = parser.parse_args()
+
 # CONSTANTS
-GAS_AMOUNT = 30000000
-NUM_NODES = 100
-NUM_TRANSACTIONS = 1000
-MEAN_VALUE = 5
-m = 2
-amount = 1
+GAS_AMOUNT = 30000000 # 30 million gas
+NUM_NODES = args.num_nodes # number of nodes in the network
+NUM_TRANSACTIONS = args.num_transactions # number of transactions to be sent
+MEAN_VALUE = args.mean_value     # mean value of the combined balance of the two accounts
+m = args.m                       # a parameter for the power law graph
+amount = args.amount # amount to be sent in each transaction
+
+########################################################################################################################################################
 
 #connect to the local ethereum blockchain
 provider = Web3.HTTPProvider('http://127.0.0.1:8545')
@@ -22,7 +38,7 @@ w3.eth.handleRevert = True
 print(w3.is_connected())
 
 #replace the address with your contract address (!very important)
-deployed_contract_address = '0x8EB25479eDE273613a31EA84A8B17E6eE7ee4968'
+deployed_contract_address = '0xe8502b69Fd7f7dF0eC01CE3ba35415B6E04Be6fe'
 
 #path of the contract json file. edit it with your contract json file
 compiled_contract_path ="build/contracts/DAPP.json"
@@ -39,6 +55,7 @@ G = nx.powerlaw_cluster_graph(NUM_NODES,m,0.5)
 while not nx.is_connected(G):
     G = nx.powerlaw_cluster_graph(NUM_NODES,m,0.5)
 
+# set the weights of the edges (the combined balance of the two accounts)
 weights = {edge: max(int(np.random.exponential(scale=MEAN_VALUE)),1) for edge in G.edges}
 nx.set_edge_attributes(G, values=weights, name='weight')
 
@@ -50,10 +67,12 @@ def display_graph(G):
     nx.draw_networkx_labels(G, pos)
     plt.show()
 
-display_graph(G)
+if args.show:
+    display_graph(G)
 
 ########################################################################################################################################################
 
+# REGISTER THE USERS
 for i in range(NUM_NODES):
     user_id = i
     user_name = f"User_{i}"
@@ -78,8 +97,13 @@ for i in range(NUM_NODES):
         message = e.args[0]['message']
         print(message[message.find("revert ")+7:])
 
+########################################################################################################################################################
+
+# CREATE THE ACCOUNTS
+
 for edge in G.edges:
-    txn_receipt = contract.functions.createAcc(edge[0], edge[1], G.edges[edge]['weight']).transact({'txType':"0x3", 'from':w3.eth.accounts[0], 'gas':GAS_AMOUNT})
+    # create the account with half of the combined balance of the two accounts
+    txn_receipt = contract.functions.createAcc(edge[0], edge[1], int(G.edges[edge]['weight']/2)).transact({'txType':"0x3", 'from':w3.eth.accounts[0], 'gas':GAS_AMOUNT})
     
     # fetch a reverted transaction:
     tx = w3.eth.get_transaction(txn_receipt)
@@ -95,17 +119,22 @@ for edge in G.edges:
     # replay the transaction locally:
     try:
         w3.eth.call(replay_tx, tx.blockNumber - 1)
-        print(f"Account created between {edge[0]} and {edge[1]} with combined balance {2* G.edges[edge]['weight']}")
+        print(f"Account created between {edge[0]} and {edge[1]} with combined balance {G.edges[edge]['weight']}")
     except Exception as e:
         message = e.args[0]['message']
         print(message[message.find("revert ")+7:])
+
+
+########################################################################################################################################################
+
+# SEND THE TRANSACTIONS
 
 num_successful_transactions = []
 successful_transactions = 0
 
 for i in range(NUM_TRANSACTIONS):
-    random_node_1 = random.randint(0,int(NUM_NODES/2))
-    random_node_2 = random.randint(int(NUM_NODES/2)+1,NUM_NODES-1)
+    random_node_1 = random.randint(0,NUM_NODES-1) 
+    random_node_2 = random.randint(0,NUM_NODES-1)
     while (random_node_1 == random_node_2):
         random_node_2 = random.randint(0,NUM_NODES-1)
     txn_receipt = contract.functions.sendAmount(random_node_1,random_node_2,amount).transact({'txType':"0x3", 'from':w3.eth.accounts[0], 'gas':GAS_AMOUNT})
@@ -133,5 +162,10 @@ for i in range(NUM_TRANSACTIONS):
     if (i+1) % NUM_NODES == 0:
         num_successful_transactions.append(successful_transactions)
         successful_transactions = 0
+
+
+########################################################################################################################################################
+
+# DISPLAY THE RESULTS
 
 print(num_successful_transactions)

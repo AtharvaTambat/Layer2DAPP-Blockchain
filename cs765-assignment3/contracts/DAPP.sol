@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity >=0.7.0 <0.9.0;
 
 contract DAPP{
     
+    // Struct to store the details of a user
     struct User {
         uint id;
         string name;
@@ -12,20 +13,25 @@ contract DAPP{
         bool exists;
     }
     
+    // Struct to store the details of a joint account
     struct Account {
         uint account_id;
         uint user1;
         uint user2;
         uint balance;
-        uint[] contributions;
+        uint[] contributions; // 0th index is for user with smaller id and 1st index is for user with larger id
         bool exists;
     }
     
+    // Mapping to store the details of all the users
     mapping(uint => User) public users;
     uint public usersCount;
+
+    // Mapping to store the details of all the accounts
     mapping(uint => Account) public accounts;
     uint public accountsCount;
     
+    // Function to register a new user
     function registerUser(uint id, string memory name) public {
         require(!users[id].exists, "User already exists");
         usersCount++;
@@ -33,12 +39,17 @@ contract DAPP{
         users[id] = User(id, name,0, partners, 0, true);
     }
 
+    // Function to get the account id of the joint account between two users
     function getAccountId(uint user1, uint user2) public pure returns (uint) {
         uint smallerUserId = user1 < user2 ? user1 : user2;
         uint largerUserId = user1 < user2 ? user2 : user1;
+
+        // Hashing the two user ids to get the account id
         return uint(keccak256(abi.encodePacked(smallerUserId, largerUserId)));
     }
     
+
+    // Function to create a joint account between two users
     // balance - is the balance of individual node
     function createAcc(uint user1, uint user2, uint balance) public {
         // users should exist
@@ -69,6 +80,7 @@ contract DAPP{
         users[user2].balance += balance;
     }
 
+    // Function to send amount from one user to another
     function sendAmount(uint user1,uint user2,uint amount) public{
         require(users[user1].exists, "User 1 does not exists");
         require(users[user2].exists, "User 2 does not exists");
@@ -95,6 +107,7 @@ contract DAPP{
         visited[user1] = true;
         queue[rear++] = user1;
 
+        // BFS
         while(front != rear){
             currnode = queue[front++];
             if (currnode == user2){
@@ -116,6 +129,8 @@ contract DAPP{
 
         // no path to user2 has enough amount
         require(currnode == user2, "No path with sufficient amount exists");
+
+        // Sending the amount from user1 to user2 if path exists
         if(currnode == user2){
             while(currnode!= user1){
                 uint account_id = getAccountId(currnode, parent[currnode]);
@@ -132,16 +147,18 @@ contract DAPP{
         }  
     }
     
+    // Function to close the joint account between two users
     function closeAccount(uint user1, uint user2) public {
         uint account_id = getAccountId(user1, user2);
         require(accounts[account_id].exists, "Account does not exist");
 
-        // user1 changed to the lower user_id of the two
+        // user1 set to the lower user_id of the two
         uint smallerUserId = user1 < user2 ? user1 : user2;
         uint largerUserId = user1 < user2 ? user2 : user1;
         user1 = smallerUserId;
         user2 = largerUserId;
 
+        // Adding the balance of the account to the users
         users[user1].balance += accounts[account_id].contributions[0];
         users[user2].balance += accounts[account_id].contributions[1];
         
@@ -165,6 +182,7 @@ contract DAPP{
 
         users[user2].partners.pop();
         
+        // Deleting the account
         delete accounts[account_id];
 
         accountsCount--;
