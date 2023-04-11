@@ -11,7 +11,7 @@ transactions and the number of failed transactions.
 
 1. Install `truffle and ganache`
 2. Clone the repository 
-3. Open a terminal in the source directory and run the following commands:
+3. Open a terminal in the source directory and run the following commands: \
   - `ganache`
   - `truffle migrate`
   - `python3 client.py`
