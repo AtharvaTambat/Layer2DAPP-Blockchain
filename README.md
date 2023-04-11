@@ -10,7 +10,7 @@ transactions and the number of failed transactions.
 # INSTRUCTIONS
 
 1. Install truffle and ganache
-2. Clone the repository
+2. Clone the repository \
 Open a terminal in the source directory and run the following commands:
 1. `ganache`
 2. `truffle migrate`
