@@ -11,7 +11,7 @@ from web3 import Web3
 
 # Parse the arguments
 parser = argparse.ArgumentParser()
-parser.add_argument('-n','--num_nodes', type=int, default=100, help='Number of nodes in the network')
+parser.add_argument('-n','--num_users', type=int, default=100, help='Number of nodes in the network')
 parser.add_argument('-t','--num_transactions', type=int, default=1000, help='Number of transactions to be sent')
 parser.add_argument('-v','--mean_value', type=int, default=10, help='Mean value of the combined balance of the two accounts')
 parser.add_argument('-m','--m', type=int, default=1, help='Number of edges to attach from a new node to existing nodes')
@@ -22,7 +22,7 @@ args = parser.parse_args()
 
 # CONSTANTS
 GAS_AMOUNT = 30000000 # 30 million gas
-NUM_NODES = args.num_nodes # number of nodes in the network
+NUM_USERS = args.num_users # number of nodes in the network
 NUM_TRANSACTIONS = args.num_transactions # number of transactions to be sent
 MEAN_VALUE = args.mean_value     # mean value of the combined balance of the two accounts
 m = args.m                       # a parameter for the power law graph
@@ -51,9 +51,9 @@ contract = w3.eth.contract(address = deployed_contract_address, abi = contract_a
 
 # CREATE THE NETWORK
 
-G = nx.powerlaw_cluster_graph(NUM_NODES,m,0.5)
+G = nx.powerlaw_cluster_graph(NUM_USERS,m,0.5)
 while not nx.is_connected(G):
-    G = nx.powerlaw_cluster_graph(NUM_NODES,m,0.5)
+    G = nx.powerlaw_cluster_graph(NUM_USERS,m,0.5)
 
 # set the weights of the edges (the combined balance of the two accounts)
 weights = {edge: max(int(np.random.exponential(scale=MEAN_VALUE)),1) for edge in G.edges}
@@ -73,7 +73,7 @@ if args.show:
 ########################################################################################################################################################
 
 # REGISTER THE USERS
-for i in range(NUM_NODES):
+for i in range(NUM_USERS):
     user_id = i
     user_name = f"User_{i}"
     txn_receipt = contract.functions.registerUser(user_id,user_name).transact({'txType':"0x3", 'from':w3.eth.accounts[0], 'gas':GAS_AMOUNT})
@@ -133,10 +133,10 @@ num_successful_transactions = []
 successful_transactions = 0
 
 for i in range(NUM_TRANSACTIONS):
-    random_node_1 = random.randint(0,NUM_NODES-1) 
-    random_node_2 = random.randint(0,NUM_NODES-1)
+    random_node_1 = random.randint(0,NUM_USERS-1) 
+    random_node_2 = random.randint(0,NUM_USERS-1)
     while (random_node_1 == random_node_2):
-        random_node_2 = random.randint(0,NUM_NODES-1)
+        random_node_2 = random.randint(0,NUM_USERS-1)
     txn_receipt = contract.functions.sendAmount(random_node_1,random_node_2,amount).transact({'txType':"0x3", 'from':w3.eth.accounts[0], 'gas':GAS_AMOUNT})
     
     # fetch a reverted transaction:
@@ -159,7 +159,7 @@ for i in range(NUM_TRANSACTIONS):
         message = e.args[0]['message']
         print(message[message.find("revert ")+7:])
 
-    if (i+1) % NUM_NODES == 0:
+    if (i+1) % 100 == 0:
         num_successful_transactions.append(successful_transactions)
         successful_transactions = 0
 
@@ -168,4 +168,8 @@ for i in range(NUM_TRANSACTIONS):
 
 # DISPLAY THE RESULTS
 
-print(num_successful_transactions)
+print(f"The number of successful transactions per 100 transactions: {successful_transactions}")
+print(f"Average number of successful transactions: {sum(num_successful_transactions)/len(num_successful_transactions)}")
+print(f"Total number of successful transactions: {sum(num_successful_transactions)}")
+print(f"Total number of failed transactions: {NUM_TRANSACTIONS - sum(num_successful_transactions)}")
+print(f"Total number of transactions: {NUM_TRANSACTIONS}")
