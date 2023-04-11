@@ -14,7 +14,7 @@ transactions and the number of failed transactions.
 Open a terminal in the source directory and run the following commands:
 1. `ganache`
 2. `truffle migrate`
-3. `python3 client.py`
+3. `python3 client.py` (Before running this command, make sure that the smart contract address is correct in client.py)
 
 You can pass the following arguments to client.py (All arguments are optional)
 1. `-n or --num_nodes` : Number of users to register (Default: 100)

@@ -167,9 +167,15 @@ for i in range(NUM_TRANSACTIONS):
 ########################################################################################################################################################
 
 # DISPLAY THE RESULTS
+if len(num_successful_transactions) != 0:
+    print(f"The number of successful transactions per 100 transactions: {num_successful_transactions}")
+    print(f"Average number of successful transactions: {sum(num_successful_transactions)/NUM_TRANSACTIONS}")
+    print(f"Total number of successful transactions: {sum(num_successful_transactions)}")
+    print(f"Total number of failed transactions: {NUM_TRANSACTIONS - sum(num_successful_transactions)}")
+    print(f"Total number of transactions: {NUM_TRANSACTIONS}")
+else:
+    print(f"Average number of successful transactions: {successful_transactions/NUM_TRANSACTIONS}")
+    print(f"Total number of successful transactions: {successful_transactions}")
+    print(f"Total number of failed transactions: {NUM_TRANSACTIONS - successful_transactions}")
+    print(f"Total number of transactions: {NUM_TRANSACTIONS}")
 
-print(f"The number of successful transactions per 100 transactions: {successful_transactions}")
-print(f"Average number of successful transactions: {sum(num_successful_transactions)/len(num_successful_transactions)}")
-print(f"Total number of successful transactions: {sum(num_successful_transactions)}")
-print(f"Total number of failed transactions: {NUM_TRANSACTIONS - sum(num_successful_transactions)}")
-print(f"Total number of transactions: {NUM_TRANSACTIONS}")
