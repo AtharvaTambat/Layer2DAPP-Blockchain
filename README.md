@@ -9,12 +9,12 @@ transactions and the number of failed transactions.
 
 # INSTRUCTIONS
 
-1. Install truffle and ganache
-2. Clone the repository \
-Open a terminal in the source directory and run the following commands:
-1. `ganache`
-2. `truffle migrate`
-3. `python3 client.py`
+1. Install `truffle and ganache`
+2. Clone the repository 
+3. Open a terminal in the source directory and run the following commands:
+  1. `ganache`
+  2. `truffle migrate`
+  3. `python3 client.py`
 
 You can pass the following arguments to client.py (All arguments are optional)
 1. `-n or --num_nodes` : Number of users to register (Default: 100)
