@@ -1,11 +1,17 @@
 # DESCRIPTION
 
-The aim of this assignment was to build a layer-2 DAPP on top of ethereum blockchain using solidity. The DAPP is a simple 
-application that allows users to create joint accounts and transfer funds between them. This application is meant to
-mimic the functionality of a lightning network. The smart contract is deployed using truffle and ganache. Also a
+This repository contains the code for a layer-2 DAPP (Decentralized Application) on top of ethereum blockchain using solidity. The DAPP is a simple 
+application that allows users to create joint accounts and transfer funds between them. 
+This DAPP is meant to implement transactions in a lightning network. The smart contract is deployed using truffle and ganache. Also a
 client.py file is provided to interact with the smart contract. The client.py file is used to register users, create joint
 accounts, transfer funds between users and joint accounts. The client.py file finally displays the number of successful
 transactions and the number of failed transactions.
+
+## DETAILS
+1. The folder `contracts` contains the code for a smart contract. 
+2. People can join the lightening network, creating account in pairs.
+3. When transaction has to take place between two people, the smart contract automatically finds out the shortest feasible route to do so (in the network of joint accounts), and transfers the amount
+4. If no such path exists, then the smart contract shows an error.
 
 # INSTRUCTIONS
 
