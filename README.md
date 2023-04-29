@@ -7,7 +7,8 @@ client.py file is provided to interact with the smart contract. The client.py fi
 accounts, transfer funds between users and joint accounts. The client.py file finally displays the number of successful
 transactions and the number of failed transactions.
 
-## DETAILS
+# DETAILS
+
 1. The folder `contracts` contains the code for a smart contract. 
 2. People can join the lightening network, creating account in pairs.
 3. When transaction has to take place between two people, the smart contract automatically finds out the shortest feasible route to do so (in the network of joint accounts), and transfers the amount
@@ -32,3 +33,7 @@ You can pass the following arguments to client.py (All arguments are optional)
 
 # EXAMPLE
 `python3 client.py -n 50 -t 400 -v 5 -m 2 -a 1 -s`
+
+# RESULTS
+
+All the insights regarding the experiments run on the simulations done, are mentioned in `reposrt.pdf` file
